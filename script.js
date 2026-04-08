@@ -670,23 +670,60 @@ async function loadStudents() {
 window.bulkStudents = [];
 window.isBulkUploading = false;
 
+function validateBulkImportPrerequisites() {
+    const requiredFields = [
+        { id: "college", label: "College" },
+        { id: "ayStart", label: "AY Start" },
+        { id: "ayEnd", label: "AY End" },
+        { id: "aySemester", label: "Semester" },
+        { id: "reportPeriod", label: "Report Period" },
+        { id: "preparedBy", label: "Prepared By" },
+        { id: "notedBy", label: "Noted By" },
+        { id: "approvedBy", label: "Approved By" }
+    ];
+
+    const missing = requiredFields.filter(field => {
+        const el = document.getElementById(field.id);
+        return !el || !el.value || el.value.trim() === "";
+    });
+
+    if(missing.length === 0) return true;
+
+    const firstMissing = document.getElementById(missing[0].id);
+    if(firstMissing && typeof firstMissing.focus === "function") {
+        firstMissing.focus();
+    }
+
+    showToast(
+        `Complete the Administrative and Signatories fields first. Missing: ${missing.map(field => field.label).join(", ")}.`,
+        "warning"
+    );
+    return false;
+}
+
 window.processSmartText = function() {
     const rawText = document.getElementById("bulkPasteInput").value;
     if(!rawText || rawText.trim() === "") {
         showToast("Please paste some text into the box first.", "warning");
         return;
     }
+    if(!validateBulkImportPrerequisites()) {
+        return;
+    }
     
     // Normalize newlines
     let text = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     
-    // Split text by student landmarks (use courseYear as marker for new student blocks)
-    // This ensures we don't start mid-table where student name might be inside a table
-    const splitRegex = /(?=COURSE & YEAR:|Course & Year:|ACADEMIC YEAR|Academic Year)/i;
-    let studentBlocks = text.split(splitRegex);
+    // Capture complete student blocks starting from the student-name header.
+    // This prevents the first record from being split apart at "COURSE & YEAR".
+    let studentBlocks = text.match(
+        /(?:^|\n)\s*(?:NAME OF STUDENT:|Name of the Student:)[\s\S]*?(?=(?:\n\s*---+\s*(?:\n|$))|(?:\n\s*(?:NAME OF STUDENT:|Name of the Student:))|$)/gi
+    ) || [];
     
     // Filter empty blocks - keep only blocks that have substantial content
-    studentBlocks = studentBlocks.filter(block => block.match(/NAME OF STUDENT:|Name of the Student:|SUBJECT/i));
+    studentBlocks = studentBlocks
+        .map(block => block.trim())
+        .filter(block => block.match(/NAME OF STUDENT:|Name of the Student:|SUBJECT/i));
     
     if(studentBlocks.length === 0) {
         showToast("Could not find any student markers. Ensure it contains 'NAME OF STUDENT:' or 'COURSE & YEAR:'.", "error");
@@ -745,8 +782,11 @@ window.processSmartText = function() {
             }
             
             let rawVal = block.substring(startStr, endStr);
-            // aggressively strip underscores/blank lines
-            rawVal = rawVal.replace(/^[_\s]+/g, '').replace(/[_\s]+$/g, '').trim(); 
+            // Remove leftover punctuation from headers like "FAILED/PASSED:" before saving.
+            rawVal = rawVal
+                .replace(/^[_\s:.-]+/g, '')
+                .replace(/[_\s]+$/g, '')
+                .trim();
             extracted[located[i].key] = rawVal;
         }
 
@@ -814,6 +854,7 @@ function renderBulkPreview() {
 window.startBulkUpload = async function() {
     if(window.isBulkUploading) return;
     if(window.bulkStudents.length === 0) return;
+    if(!validateBulkImportPrerequisites()) return;
     
     window.isBulkUploading = true;
     const btn = document.getElementById("btnStartBulkUpload");
