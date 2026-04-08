@@ -1,0 +1,143 @@
+/* CUSTOM STITCHCODE OVERRIDES AND LOADING ANIMATIONS */
+
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a237e 0%, #000666 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-container {
+  text-align: center;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top: 5px solid #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ffd700;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-dot.connected {
+  background-color: #4ade80;
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+}
+
+/* Base modifications for the unified tailwind layout */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.status-btn.selected {
+  outline: 2px solid #000666;
+  outline-offset: 2px;
+}
+
+/* Auto-expand textareas */
+textarea[data-autoresize] {
+  resize: none;
+  overflow: hidden;
+  min-height: auto;
+}
+
+/* Flexible scrollable textareas with proper word wrapping */
+textarea {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+/* Scrollable textareas for long content */
+textarea.scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: auto;
+  resize: vertical;
+}
+
+/* Scrollbar styling for better UX */
+textarea.scrollable::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+textarea.scrollable::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+textarea.scrollable::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+textarea.scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Firefox scrollbar */
+textarea.scrollable {
+  scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
+  scrollbar-width: thin;
+}
+
+/* Active status button styling */
+.status-btn.active {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+/* Scrollable text inputs for long content */
+input[type="text"],
+input[type="number"] {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+input[data-scrollable] {
+  overflow-x: auto;
+}
