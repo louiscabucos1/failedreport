@@ -136,11 +136,18 @@
             <i class="bi bi-folder2-open"></i>
             Student Reports Database
           </h2>
-          <button type="button"
-            class="px-4 py-2 bg-surface-container text-on-surface-variant text-sm font-bold rounded-lg hover:bg-surface-dim transition-all flex items-center gap-1"
-            onclick="loadStudents()">
-            <i class="bi bi-arrow-clockwise text-lg"></i> Refresh
-          </button>
+          <div class="flex items-center gap-3">
+            <button type="button"
+              class="px-4 py-2 bg-surface-container text-on-surface-variant text-sm font-bold rounded-lg hover:bg-surface-dim transition-all flex items-center gap-1"
+              onclick="loadStudents()">
+              <i class="bi bi-arrow-clockwise text-lg"></i> Refresh
+            </button>
+            <button type="button"
+              class="px-4 py-2 bg-error text-white text-sm font-bold rounded-lg hover:bg-error-container hover:text-error transition-all flex items-center gap-1"
+              onclick="openDeleteAllModal()">
+              <i class="bi bi-trash3 text-lg"></i> Delete All
+            </button>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
@@ -170,6 +177,68 @@
 
   <!-- Core Application Logic -->
   <script src="script.js"></script>
+
+  <!-- DELETE ALL CONFIRMATION MODAL -->
+  <div id="deleteAllModal" class="fixed inset-0 bg-black/50 z-[10000] hidden flex items-center justify-center">
+    <div class="bg-surface rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+      <h3 class="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
+        <i class="bi bi-exclamation-triangle text-error"></i>
+        Delete All Student Records
+      </h3>
+      <p class="text-on-surface-variant text-sm mb-6">
+        This action cannot be undone. All student records will be permanently deleted.
+      </p>
+      
+      <div class="bg-surface-container rounded-lg p-4 mb-6">
+        <p class="text-xs text-on-surface-variant mb-2">To confirm, please enter these 4 numbers:</p>
+        <p id="confirmationNumbers" class="text-2xl font-bold text-error tracking-widest text-center mb-4">-</p>
+        <input 
+          type="text" 
+          id="confirmationInput" 
+          placeholder="Enter 4 numbers" 
+          maxlength="4"
+          class="w-full px-3 py-2 border border-outline rounded-lg text-center text-lg font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-primary"
+          onkeypress="if(event.key==='Enter') confirmDeleteAll()">
+      </div>
+
+      <div class="flex gap-3">
+        <button type="button"
+          class="flex-1 px-4 py-2 bg-surface-container text-on-surface-variant text-sm font-bold rounded-lg hover:bg-surface-dim transition-all"
+          onclick="closeDeleteAllModal()">
+          Cancel
+        </button>
+        <button type="button"
+          class="flex-1 px-4 py-2 bg-error text-white text-sm font-bold rounded-lg hover:bg-error-container hover:text-error transition-all"
+          onclick="confirmDeleteAll()">
+          Delete All
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE PROGRESS MODAL -->
+  <div id="deleteProgressModal" class="fixed inset-0 bg-black/50 z-[10001] hidden flex items-center justify-center">
+    <div class="bg-surface rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+      <h3 class="text-lg font-bold text-on-surface mb-6 flex items-center gap-2">
+        <i class="bi bi-hourglass-split text-primary animate-spin"></i>
+        Deleting Records
+      </h3>
+      
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+          <p class="text-sm text-on-surface-variant">Progress</p>
+          <p class="text-sm font-bold text-primary"><span id="progressCurrent">0</span> / <span id="progressTotal">0</span></p>
+        </div>
+        <div class="w-full bg-surface-container rounded-full h-3 overflow-hidden">
+          <div id="progressBar" class="bg-gradient-to-r from-primary to-primary-container h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="bg-surface-container rounded-lg p-4">
+        <p id="progressStatus" class="text-xs text-on-surface-variant text-center">Initializing deletion...</p>
+      </div>
+    </div>
+  </div>
 
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toastContainer" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-4 pointer-events-none"></div>
