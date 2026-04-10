@@ -485,6 +485,122 @@ async function removeStudent(sheetName) {
   }
 }
 
+// DELETE ALL FUNCTIONS
+function generateRandomNumbers() {
+  return Array.from({ length: 4 }, () => Math.floor(Math.random() * 10)).join('');
+}
+
+function openDeleteAllModal() {
+  const modal = document.getElementById("deleteAllModal");
+  const confirmationNumbers = generateRandomNumbers();
+  window.deleteAllConfirmationCode = confirmationNumbers;
+  
+  document.getElementById("confirmationNumbers").textContent = confirmationNumbers.split('').join(' ');
+  document.getElementById("confirmationInput").value = "";
+  document.getElementById("confirmationInput").focus();
+  
+  modal.classList.remove("hidden");
+}
+
+function closeDeleteAllModal() {
+  const modal = document.getElementById("deleteAllModal");
+  modal.classList.add("hidden");
+  document.getElementById("confirmationInput").value = "";
+  window.deleteAllConfirmationCode = null;
+}
+
+async function confirmDeleteAll() {
+  const input = document.getElementById("confirmationInput").value.trim();
+  const correct = window.deleteAllConfirmationCode;
+  
+  if (input !== correct) {
+    showToast("❌ Incorrect numbers. Please try again.", "error");
+    document.getElementById("confirmationInput").value = "";
+    document.getElementById("confirmationInput").focus();
+    return;
+  }
+  
+  closeDeleteAllModal();
+  await deleteAllStudents();
+}
+
+async function deleteAllStudents() {
+  try {
+    // Get current list of students displayed on the page
+    const studentRows = document.querySelectorAll("#studentTableBody tr");
+    const studentNames = [];
+    
+    // Extract sheet names from visible rows (skip "Loading records..." row)
+    studentRows.forEach(row => {
+      const cells = row.querySelectorAll("td");
+      if (cells.length > 0 && cells[0].textContent.trim() !== "Loading records...") {
+        // Get the delete button's onclick value which contains the sheet name
+        const deleteBtn = row.querySelector("button[onclick*='removeStudent']");
+        if (deleteBtn) {
+          const onclickAttr = deleteBtn.getAttribute("onclick");
+          const match = onclickAttr.match(/removeStudent\('([^']+)'\)/);
+          if (match) {
+            studentNames.push(match[1]);
+          }
+        }
+      }
+    });
+    
+    if (studentNames.length === 0) {
+      showToast("No student records to delete.", "info");
+      return;
+    }
+    
+    // Show progress modal
+    const progressModal = document.getElementById("deleteProgressModal");
+    progressModal.classList.remove("hidden");
+    
+    document.getElementById("progressTotal").textContent = studentNames.length;
+    document.getElementById("progressCurrent").textContent = "0";
+    document.getElementById("progressBar").style.width = "0%";
+    document.getElementById("progressStatus").textContent = "Starting deletion...";
+    
+    // Delete each student one by one
+    let deleted = 0;
+    let failed = 0;
+    
+    for (let i = 0; i < studentNames.length; i++) {
+      const sheetName = studentNames[i];
+      try {
+        document.getElementById("progressStatus").textContent = `Deleting: ${sheetName}`;
+        await gasRequest("deleteStudent", { sheetName });
+        deleted++;
+        
+        // Update progress
+        const currentCount = i + 1;
+        document.getElementById("progressCurrent").textContent = currentCount;
+        const percentage = (currentCount / studentNames.length) * 100;
+        document.getElementById("progressBar").style.width = percentage + "%";
+        
+      } catch (err) {
+        console.error(`Failed to delete ${sheetName}:`, err);
+        failed++;
+      }
+    }
+    
+    // Hide progress modal
+    progressModal.classList.add("hidden");
+    
+    // Show completion message
+    if (deleted > 0) {
+      showToast(`✓ Deleted ${deleted} student record(s) successfully.`, "success");
+    }
+    if (failed > 0) {
+      showToast(`⚠️ Failed to delete ${failed} record(s).`, "warning");
+    }
+    
+    loadStudents();
+  } catch (err) {
+    document.getElementById("deleteProgressModal").classList.add("hidden");
+    showToast(err.message, "error");
+  }
+}
+
 async function editStudent(sheetName) {
   if (!document.getElementById("studentForm")) {
     window.location.href = "index.html?edit=" + encodeURIComponent(sheetName);
@@ -1039,13 +1155,13 @@ function escapeAttr(str) {
 }
 
 function copyConversionPrompt() {
-  const prompt = `PROMPT FOR CONVERTING FAILED STUDENTS' REPORT TO SMART TEXT READER FORMAT
+  const prompt = `PROMPT FOR CONVERTING FAILED STUDENTS' REPORT TO SMART TEXT READER FORMAT (V5 - FINAL PROTOCOL)
 
 Convert the Failed Students' Report from table format to Smart Text Reader format. Follow these rules:
 
 TRANSFORMATION RULES:
 
-1. Extract data from the table structure and convert to header-based format with markers (colon after each field name)
+1. Format: Header-based with markers (colon after each field name). No table lines or administrative headers. Remove all college letterhead, signatures, and structural formatting.
 
 2. Required Headers (in this exact order):
    - NAME OF STUDENT:
@@ -1064,23 +1180,48 @@ TRANSFORMATION RULES:
    - IF FAILED, REASONS:
    - FAILED/PASSED
 
-3. COURSE & YEAR format: Always "BS Information Technology - 1st Year"
+3. COURSE & YEAR format:
+   - If COURSE & YEAR data exists in the source, use it as-is
+   - If missing from source, ask the user to specify the course and year before proceeding
 
-4. Narration Integration: Merge standalone narration explanations INTO the "IF FAILED, REASONS:" field as the closing explanation (do NOT include a "NARRATION:" label)
+4. THE "TWO-SENTENCE MINIMUM" RULE:
+   - EVERY field must contain at least two full, complete sentences
+   - Even brief fields like WHY DID IT HAPPEN? must be expanded to 2+ sentences
+   - Example: "The student was unable to join us for our final classes at the end of the term. This made it very hard to keep up with the new lessons being taught."
 
-5. STUDENT'S AWARENESS personalization:
-   - For most students: "I informed the [SURNAME] to come to my office, but no one showed up." (use student's surname from NAME OF STUDENT field)
-   - For transfer students (Bajao, Gamboa): "[SURNAME] informed classmates about the transfer reasons."
-   - For students who were notified (Vidal): "Instructor notified [SURNAME] about the failing grades."
-   - For unreachable students (Bautista, Manatad): "[SURNAME] was completely unreachable with no explanation for discontinuing."
+5. THE "EXPLICIT MARKER" RULE:
+   - If source says NONE or N/A, START with that word
+   - IMMEDIATELY follow with a two-sentence explanation in elementary teacher tone
+   - PARENT'S ACKNOWLEDGMENT (N/A): "N/A. We haven't heard back from the parents yet to talk about how we can help. We hope to connect with them soon to support the student."
+   - REMEDIAL TEACHING (NONE): "NONE. Since the student wasn't in class, we weren't able to do any extra practice or special activities together. We really missed having them there to participate."
+   - PERFORMANCE ASSESSMENT (NONE): "NONE. We couldn't evaluate how well the student understood the lessons because they weren't present. Without their work or participation, we had nothing to measure."
+   - ANY GIVEN ACTIVITIES (NONE): "NONE. The student couldn't complete any of our classroom activities or special exercises. Without these completed tasks, there was no work we could review for grading."
 
-6. WHEN IT WAS STARTED?: Extract the date exactly as provided
+6. ELEMENTARY TEACHER TONE:
+   - Use simple, kind, and encouraging language throughout
+   - Write as if explaining to a young child: avoid jargon, be warm and sympathetic
+   - Example: "The student was trying hard but faced some challenges." (instead of "academic deficiency")
+   - Show care and understanding while explaining facts objectively
 
-7. Consolidate multi-line explanations into single clear sentences
+7. IF FAILED, REASONS (3+ Sentences):
+   - Cohesive paragraph following [Cause] + [Consequence] + [Final Result] structure
+   - Sentence 1: Explain WHAT caused the failure (the root reason)
+   - Sentence 2: Explain WHAT happened because of this (the consequence)
+   - Sentence 3+: Explain the FINAL RESULT (how it led to the failing grade)
+   - Use elementary teacher tone with kindness and clarity
+   - Example: "[Student name]'s failure was caused by their inability to attend classes from the start of the semester. Because they weren't in class, they missed all the lessons, quizzes, and activities that were so important. Without any completed work or test scores, we had no choice but to give them a failing grade."
 
-8. Remove all table formatting, administrative headers, and signature blocks - keep only student data
+8. STOPPED/WITHDRAW/DROP OUT and FAILED/PASSED:
+   - Keep these fields EXACTLY as they appear in source data
+   - Do NOT modify, expand, or rewrite these two fields
 
-9. No separator lines between student records`;
+9. STUDENT'S AWARENESS personalization:
+   - For most students: Start with "I informed the class mayor..." or similar, then add a 2nd sentence explaining the outcome
+   - For transfer students (Bajao, Gamboa): "[SURNAME] informed classmates about the reasons for the transfer. They communicated openly with others before leaving the program."
+   - For notified students (Vidal): "The instructor notified [SURNAME] about the failing grades. We discussed what led to these results and what might help in the future."
+   - For unreachable students (Bautista, Manatad): "[SURNAME] was completely unreachable with no explanation for discontinuing. Despite multiple attempts to contact them, there was no response or communication."
+
+10. No separator lines between student records - records flow directly into each other`;
 
   navigator.clipboard.writeText(prompt).then(() => {
     showToast("✓ Conversion prompt copied to clipboard!", "success", true);
