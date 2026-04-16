@@ -1155,73 +1155,70 @@ function escapeAttr(str) {
 }
 
 function copyConversionPrompt() {
-  const prompt = `PROMPT FOR CONVERTING FAILED STUDENTS' REPORT TO SMART TEXT READER FORMAT (V5 - FINAL PROTOCOL)
+  const prompt = `# PROMPT FOR CONVERTING FAILED STUDENTS' REPORT TO SMART TEXT READER FORMAT (V5 - PROFESSIONAL PROTOCOL)
 
 Convert the Failed Students' Report from table format to Smart Text Reader format. Follow these rules:
 
-TRANSFORMATION RULES:
+### TRANSFORMATION RULES:
 
-1. Format: Header-based with markers (colon after each field name). No table lines or administrative headers. Remove all college letterhead, signatures, and structural formatting.
+**1. Format:** Header-based with markers (colon after each field name). No table lines or administrative headers. Remove all college letterhead, signatures, and structural formatting.
 
-2. Required Headers (in this exact order):
-   - NAME OF STUDENT:
-   - COURSE & YEAR:
-   - SUBJECT/S:
-   - HOW DID HE/SHE FAIL?:
-   - WHAT HAPPENED?:
-   - WHEN IT WAS STARTED?:
-   - WHY DID IT HAPPEN?:
-   - STOPPED/WITHDRAW/DROP OUT:
-   - STUDENT'S AWARENESS:
-   - PARENT'S ACKNOWLEDGMENT:
-   - REMEDIAL TEACHING:
-   - PERFORMANCE ASSESSMENT:
-   - ANY GIVEN ACTIVITIES, EXERCISES OR REMOVAL EXAMS?:
-   - IF FAILED, REASONS:
-   - FAILED/PASSED
+**2. Required Headers (in this exact order):**
+- NAME OF STUDENT:
+- COURSE & YEAR:
+- SUBJECT/S:
+- HOW DID HE/SHE FAIL?:
+- WHAT HAPPENED?:
+- WHEN IT WAS STARTED?:
+- WHY DID IT HAPPEN?:
+- STOPPED/WITHDRAW/DROP OUT:
+- STUDENT'S AWARENESS:
+- PARENT'S ACKNOWLEDGMENT:
+- REMEDIAL TEACHING:
+- PERFORMANCE ASSESSMENT:
+- ANY GIVEN ACTIVITIES, EXERCISES OR REMOVAL EXAMS?:
+- IF FAILED, REASONS:
+- FAILED/PASSED
 
-3. COURSE & YEAR format:
-   - If COURSE & YEAR data exists in the source, use it as-is
-   - If missing from source, ask the user to specify the course and year before proceeding
+**3. COURSE & YEAR format:**
+- If COURSE & YEAR data exists in the source, use it as-is.
+- If missing from source, ask the user to specify the course and year before proceeding.
 
-4. THE "TWO-SENTENCE MINIMUM" RULE:
-   - EVERY field must contain at least two full, complete sentences
-   - Even brief fields like WHY DID IT HAPPEN? must be expanded to 2+ sentences
-   - Example: "The student was unable to join us for our final classes at the end of the term. This made it very hard to keep up with the new lessons being taught."
+**4. THE "TWO-SENTENCE MINIMUM" RULE:**
+- **EVERY** field must contain at least two full, complete sentences.
+- Even brief fields like "WHY DID IT HAPPEN?" must be expanded into professional academic context.
+- *Example:* "The student encountered personal circumstances that hindered their ability to maintain a consistent academic schedule. Consequently, they were unable to meet the minimum attendance threshold required for the term."
 
-5. THE "EXPLICIT MARKER" RULE:
-   - If source says NONE or N/A, START with that word
-   - IMMEDIATELY follow with a two-sentence explanation in elementary teacher tone
-   - PARENT'S ACKNOWLEDGMENT (N/A): "N/A. We haven't heard back from the parents yet to talk about how we can help. We hope to connect with them soon to support the student."
-   - REMEDIAL TEACHING (NONE): "NONE. Since the student wasn't in class, we weren't able to do any extra practice or special activities together. We really missed having them there to participate."
-   - PERFORMANCE ASSESSMENT (NONE): "NONE. We couldn't evaluate how well the student understood the lessons because they weren't present. Without their work or participation, we had nothing to measure."
-   - ANY GIVEN ACTIVITIES (NONE): "NONE. The student couldn't complete any of our classroom activities or special exercises. Without these completed tasks, there was no work we could review for grading."
+**5. THE "EXPLICIT MARKER" RULE (ACADEMIC STANDARD):**
+- If source says NONE or N/A, **START** with that word.
+- **IMMEDIATELY** follow with a two-sentence explanation in a **formal, administrative faculty tone**:
+    - **PARENT'S ACKNOWLEDGMENT (N/A):** "N/A. There has been no formal correspondence with the parents or guardians regarding the student's current academic status. We await a response to our previous inquiries to discuss potential support systems."
+    - **REMEDIAL TEACHING (NONE):** "NONE. No remedial interventions could be implemented as the student was not present to receive supplemental instruction. Participation in these sessions is contingent upon the student's active presence and engagement."
+    - **PERFORMANCE ASSESSMENT (NONE):** "NONE. An objective evaluation of the student's academic progress could not be completed due to the lack of submitted work. Without measurable data points, there was no basis for a passing evaluation."
+    - **ANY GIVEN ACTIVITIES (NONE):** "NONE. The student did not participate in any scheduled laboratory exercises or classroom assessments. Consequently, there are no records available to justify a removal exam or a grade adjustment."
 
-6. ELEMENTARY TEACHER TONE:
-   - Use simple, kind, and encouraging language throughout
-   - Write as if explaining to a young child: avoid jargon, be warm and sympathetic
-   - Example: "The student was trying hard but faced some challenges." (instead of "academic deficiency")
-   - Show care and understanding while explaining facts objectively
+**6. ACADEMIC FACULTY TONE:**
+- Use professional, objective, and scholarly language suitable for an official College Dean's report.
+- Avoid casual, sympathetic, or "childish" phrasing. Use terms like "academic engagement," "demonstrate mastery," "facilitate intervention," and "course competencies."
 
-7. IF FAILED, REASONS (3+ Sentences):
-   - Cohesive paragraph following [Cause] + [Consequence] + [Final Result] structure
-   - Sentence 1: Explain WHAT caused the failure (the root reason)
-   - Sentence 2: Explain WHAT happened because of this (the consequence)
-   - Sentence 3+: Explain the FINAL RESULT (how it led to the failing grade)
-   - Use elementary teacher tone with kindness and clarity
-   - Example: "[Student name]'s failure was caused by their inability to attend classes from the start of the semester. Because they weren't in class, they missed all the lessons, quizzes, and activities that were so important. Without any completed work or test scores, we had no choice but to give them a failing grade."
+**7. IF FAILED, REASONS (3+ Sentences):**
+- Cohesive paragraph following [Cause] + [Consequence] + [Final Result] structure.
+- **Sentence 1:** Identify the primary root cause of the failure using formal terminology.
+- **Sentence 2:** Explain the specific academic consequence (e.g., lack of evaluative data, missed assessments).
+- **Sentence 3+:** State the final administrative result (e.g., failure to meet minimum performance standards).
+- *Example:* "[Student name]'s failure was primarily caused by an inability to maintain attendance during the critical final term. This absence led to a complete lack of submissions for required assessments and final examinations. As the student failed to meet the minimum performance standards established in the course syllabus, a failing grade was issued."
 
-8. STOPPED/WITHDRAW/DROP OUT and FAILED/PASSED:
-   - Keep these fields EXACTLY as they appear in source data
-   - Do NOT modify, expand, or rewrite these two fields
+**8. STOPPED/WITHDRAW/DROP OUT and FAILED/PASSED:**
+- Keep these fields **EXACTLY** as they appear in source data.
+- Do **NOT** modify, expand, or rewrite these two specific fields.
 
-9. STUDENT'S AWARENESS personalization:
-   - For most students: Start with "I informed the class mayor..." or similar, then add a 2nd sentence explaining the outcome
-   - For transfer students (Bajao, Gamboa): "[SURNAME] informed classmates about the reasons for the transfer. They communicated openly with others before leaving the program."
-   - For notified students (Vidal): "The instructor notified [SURNAME] about the failing grades. We discussed what led to these results and what might help in the future."
-   - For unreachable students (Bautista, Manatad): "[SURNAME] was completely unreachable with no explanation for discontinuing. Despite multiple attempts to contact them, there was no response or communication."
+**9. STUDENT'S AWARENESS personalization:**
+- **For most students:** Start with "I informed the class mayor..." then add a 2nd sentence regarding the lack of compliance or response.
+- **For transfer students:** "[SURNAME] provided notification to peers regarding their intent to transfer institutions. This communication occurred prior to their official withdrawal from the course."
+- **For notified students:** "The instructor provided formal notification to [SURNAME] regarding their current academic standing. A discussion was initiated regarding the factors leading to this result."
+- **For unreachable students:** "[SURNAME] remained entirely unreachable throughout the latter half of the term with no formal explanation for their absence. Despite multiple outreach attempts, no communication was established."
 
-10. No separator lines between student records - records flow directly into each other`;
+**10. No separator lines between student records** - records flow directly into each other.`;
 
   navigator.clipboard.writeText(prompt).then(() => {
     showToast("✓ Conversion prompt copied to clipboard!", "success", true);
