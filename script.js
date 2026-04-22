@@ -313,8 +313,9 @@ function loadFormFromCache() {
         document.getElementById("college").value = data.college;
     }
     if(data.academicYearSemester) {
-        // Example: "2023-2024 1st Semester" or "2023-2024 Summer"
-        const parts = data.academicYearSemester.match(/^(\d+)-(\d+)\s+(.*)$/);
+        // Example: "ACADEMIC YEAR 2023-2024 1st Semester" or "2023-2024 1st Semester"
+        let ayText = data.academicYearSemester.replace(/^ACADEMIC YEAR\s+/, "").trim();
+        const parts = ayText.match(/^(\d+)-(\d+)\s+(.*)$/);
         if(parts) {
             if(document.getElementById("ayStart")) document.getElementById("ayStart").value = parts[1];
             if(document.getElementById("ayEnd")) document.getElementById("ayEnd").value = parts[2];
@@ -350,11 +351,11 @@ function getFormData() {
   
   let formattedSemester = "";
   if (ayStart || ayEnd || aySem) {
-    formattedSemester = `${ayStart}-${ayEnd} ${aySem}`.trim();
+    formattedSemester = `ACADEMIC YEAR ${ayStart}-${ayEnd} ${aySem}`.trim();
   }
   
   return {
-    college: document.getElementById("college").value.trim(),
+    college: document.getElementById("college").value.trim().toUpperCase(),
     reportPeriod: document.getElementById("reportPeriod").value.trim(),
     academicYearSemester: formattedSemester,
     studentName: document.getElementById("studentName").value.trim(),
@@ -677,7 +678,8 @@ function populateFormWithData(data) {
   if(document.getElementById("college")) document.getElementById("college").value = data.college || "";
   
   if (data.academicYearSemester) {
-      const parts = data.academicYearSemester.match(/^(\d+)-(\d+)\s+(.*)$/);
+      let ayText = data.academicYearSemester.replace(/^ACADEMIC YEAR\s+/, "").trim();
+      const parts = ayText.match(/^(\d+)-(\d+)\s+(.*)$/);
       if(parts) {
           if(document.getElementById("ayStart")) document.getElementById("ayStart").value = parts[1];
           if(document.getElementById("ayEnd")) document.getElementById("ayEnd").value = parts[2];
@@ -1040,7 +1042,7 @@ function populateStudentTable(students) {
     <tr class="hover:bg-surface-container-low transition-colors border-b border-surface-container-high/50 last:border-0">
       <td class="p-4 font-bold text-primary">${escapeHtml(st.studentName || st.sheetName)}</td>
       <td class="p-4 text-sm text-on-surface-variant">${escapeHtml(st.courseYear || "")}</td>
-      <td class="p-4 text-sm text-on-surface-variant">${escapeHtml(st.college || "")}</td>
+      <td class="p-4 text-sm text-on-surface-variant">${escapeHtml((st.college || "").toUpperCase())}</td>
       <td class="p-4"><span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant text-xs font-bold rounded-lg shadow-sm border border-outline-variant/30">${escapeHtml(st.status || "N/A")}</span></td>
       <td class="p-4">
         <div class="flex gap-2 flex-wrap">
